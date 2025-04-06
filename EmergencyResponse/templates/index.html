@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Response System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .agent-card {
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #28a745;
+        }
+        .status-error {
+            background-color: #dc3545;
+        }
+        .status-warning {
+            background-color: #ffc107;
+        }
+        .activity-log {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+        .activity-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .activity-time {
+            color: #666;
+            font-size: 0.8em;
+        }
+        .resource-status {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .resource-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .emergency-alert {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <h1 class="text-center mb-4">Emergency Response System Dashboard</h1>
+        
+        <div class="row">
+            <!-- Weather Agent Card -->
+            <div class="col-md-4">
+                <div class="card agent-card">
+                    <div class="card-header">
+                        <i class="fas fa-cloud-sun me-2"></i>
+                        Weather Monitoring Agent
+                        <span class="status-indicator status-active" id="weather-status"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Current Weather Status</h5>
+                        <div id="weather-data">
+                            <p>Temperature: <span id="weather-temp">--</span>°C</p>
+                            <p>Conditions: <span id="weather-conditions">--</span></p>
+                            <p>Last Updated: <span id="weather-last-update">--</span></p>
+                        </div>
+                        <div class="activity-log" id="weather-activity">
+                            <!-- Activity logs will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crime Detection Agent Card -->
+            <div class="col-md-4">
+                <div class="card agent-card">
+                    <div class="card-header">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Crime Detection Agent
+                        <span class="status-indicator status-active" id="crime-status"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Crime Detection Status</h5>
+                        <div id="crime-data">
+                            <p>Active Cameras: <span id="crime-cameras">--</span></p>
+                            <p>Detected Incidents: <span id="crime-incidents">--</span></p>
+                            <p>Last Detection: <span id="crime-last-detection">--</span></p>
+                        </div>
+                        <div class="activity-log" id="crime-activity">
+                            <!-- Activity logs will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Emergency Agent Card -->
+            <div class="col-md-4">
+                <div class="card agent-card">
+                    <div class="card-header">
+                        <i class="fas fa-ambulance me-2"></i>
+                        Medical Emergency Agent
+                        <span class="status-indicator status-active" id="medical-status"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Medical Emergency Status</h5>
+                        <div id="medical-data">
+                            <p>Active Emergencies: <span id="medical-active">--</span></p>
+                            <p>Hospital Capacity: <span id="medical-capacity">--</span></p>
+                            <p>Last Emergency: <span id="medical-last">--</span></p>
+                        </div>
+                        <div class="activity-log" id="medical-activity">
+                            <!-- Activity logs will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fire Detection Agent Card -->
+            <div class="col-md-4">
+                <div class="card agent-card">
+                    <div class="card-header">
+                        <i class="fas fa-fire me-2"></i>
+                        Fire Detection Agent
+                        <span class="status-indicator status-active" id="fire-status"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Fire Detection Status</h5>
+                        <div id="fire-data">
+                            <p>Active Fires: <span id="fire-active">--</span></p>
+                            <p>Thermal Cameras: <span id="fire-cameras">--</span></p>
+                            <p>Last Detection: <span id="fire-last-detection">--</span></p>
+                        </div>
+                        <div class="activity-log" id="fire-activity">
+                            <!-- Activity logs will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traffic Monitoring Agent Card -->
+            <div class="col-md-4">
+                <div class="card agent-card">
+                    <div class="card-header">
+                        <i class="fas fa-traffic-light me-2"></i>
+                        Traffic Monitoring Agent
+                        <span class="status-indicator status-active" id="traffic-status"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Traffic Monitoring Status</h5>
+                        <div id="traffic-data">
+                            <p>Monitored Roads: <span id="traffic-roads">--</span></p>
+                            <p>Traffic Lights: <span id="traffic-lights">--</span></p>
+                            <p>Last Update: <span id="traffic-last-update">--</span></p>
+                        </div>
+                        <div class="activity-log" id="traffic-activity">
+                            <!-- Activity logs will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Coordinator Agent Card -->
+            <div class="col-md-4">
+                <div class="card agent-card">
+                    <div class="card-header">
+                        <i class="fas fa-tasks me-2"></i>
+                        Resource Coordinator Agent
+                        <span class="status-indicator status-active" id="resource-status"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Resource Coordination Status</h5>
+                        <div id="resource-data">
+                            <p>Available Resources: <span id="resource-available">--</span></p>
+                            <p>Dispatched Resources: <span id="resource-dispatched">--</span></p>
+                            <p>Last Coordination: <span id="resource-last">--</span></p>
+                        </div>
+                        <div class="activity-log" id="resource-activity">
+                            <!-- Activity logs will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Alerts Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Active Emergency Alerts
+                    </div>
+                    <div class="card-body">
+                        <div id="emergency-alerts" class="activity-log">
+                            <!-- Emergency alerts will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        // Function to add activity log entry
+        function addActivityLog(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `activity-item ${type}`;
+            entry.innerHTML = `
+                <span class="activity-time">${time}</span>
+                <span class="activity-message">${message}</span>
+            `;
+            container.insertBefore(entry, container.firstChild);
+            if (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        // Function to update agent status
+        function updateAgentStatus(agentId, status) {
+            const indicator = document.getElementById(`${agentId}-status`);
+            indicator.className = 'status-indicator';
+            switch(status) {
+                case 'active':
+                    indicator.classList.add('status-active');
+                    break;
+                case 'error':
+                    indicator.classList.add('status-error');
+                    break;
+                case 'warning':
+                    indicator.classList.add('status-warning');
+                    break;
+            }
+        }
+
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            addActivityLog('resource-activity', 'Connected to server', 'info');
+        });
+
+        socket.on('agent_states', (data) => {
+            // Update Weather Agent
+            if (data.weather) {
+                document.getElementById('weather-temp').textContent = data.weather.temperature || '--';
+                document.getElementById('weather-conditions').textContent = data.weather.conditions || '--';
+                document.getElementById('weather-last-update').textContent = data.weather.last_update || '--';
+                updateAgentStatus('weather', data.weather.status === 'Monitoring' ? 'active' : 'warning');
+                addActivityLog('weather-activity', `Weather updated: ${data.weather.conditions}`);
+            }
+
+            // Update Crime Detection Agent
+            if (data.crime) {
+                document.getElementById('crime-cameras').textContent = data.crime.active_cameras || '--';
+                document.getElementById('crime-incidents').textContent = data.crime.detected_incidents || '--';
+                document.getElementById('crime-last-detection').textContent = data.crime.last_detection || '--';
+                updateAgentStatus('crime', data.crime.status === 'Monitoring' ? 'active' : 'warning');
+                addActivityLog('crime-activity', `Crime detection status: ${data.crime.status}`);
+            }
+
+            // Update Medical Emergency Agent
+            if (data.medical) {
+                document.getElementById('medical-active').textContent = data.medical.active_emergencies || '--';
+                document.getElementById('medical-capacity').textContent = 
+                    Object.values(data.medical.hospitals || {}).map(h => h.status).join(', ') || '--';
+                document.getElementById('medical-last').textContent = data.medical.last_emergency || '--';
+                updateAgentStatus('medical', data.medical.status === 'Monitoring' ? 'active' : 'warning');
+                addActivityLog('medical-activity', `Medical emergencies: ${data.medical.active_emergencies}`);
+            }
+
+            // Update Fire Detection Agent
+            if (data.fire) {
+                document.getElementById('fire-active').textContent = data.fire.active_fires || '--';
+                document.getElementById('fire-cameras').textContent = data.fire.camera_feeds?.length || '--';
+                document.getElementById('fire-last-detection').textContent = data.fire.last_detection || '--';
+                updateAgentStatus('fire', data.fire.status === 'Monitoring' ? 'active' : 'warning');
+                addActivityLog('fire-activity', `Fire detection status: ${data.fire.status}`);
+            }
+
+            // Update Traffic Monitoring Agent
+            if (data.traffic) {
+                document.getElementById('traffic-roads').textContent = Object.keys(data.traffic.road_network || {}).length || '--';
+                document.getElementById('traffic-lights').textContent = Object.keys(data.traffic.traffic_lights || {}).length || '--';
+                document.getElementById('traffic-last-update').textContent = data.traffic.last_update || '--';
+                updateAgentStatus('traffic', data.traffic.status === 'Monitoring' ? 'active' : 'warning');
+                addActivityLog('traffic-activity', `Traffic monitoring status: ${data.traffic.status}`);
+            }
+
+            // Update Resource Coordinator Agent
+            if (data.resource_coordinator) {
+                document.getElementById('resource-available').textContent = 
+                    Object.values(data.resource_coordinator.available_resources || {}).reduce((a, b) => a + b, 0) || '--';
+                document.getElementById('resource-dispatched').textContent = 
+                    Object.values(data.resource_coordinator.dispatched_resources || {}).reduce((a, b) => a + b, 0) || '--';
+                document.getElementById('resource-last').textContent = data.resource_coordinator.last_coordination || '--';
+                updateAgentStatus('resource', data.resource_coordinator.status === 'Active' ? 'active' : 'warning');
+                addActivityLog('resource-activity', `Resource coordination status: ${data.resource_coordinator.status}`);
+            }
+        });
+
+        socket.on('emergency_alert', (data) => {
+            const alertsContainer = document.getElementById('emergency-alerts');
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger emergency-alert';
+            alert.innerHTML = `
+                <strong>${data.type.toUpperCase()} ALERT:</strong> ${data.message}
+                <br>
+                <small>Location: ${data.location.lat}, ${data.location.lon}</small>
+                <br>
+                <small>Time: ${new Date().toLocaleTimeString()}</small>
+            `;
+            alertsContainer.insertBefore(alert, alertsContainer.firstChild);
+            if (alertsContainer.children.length > 5) {
+                alertsContainer.removeChild(alertsContainer.lastChild);
+            }
+        });
+    </script>
+</body>
+</html> 

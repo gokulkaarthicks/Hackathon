@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Response System - Simulation Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --card-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --header-bg: #343a40;
+            --header-text: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --header-bg: #000000;
+            --header-text: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        .theme-toggle {
+            position: relative;
+            top: 0;
+            right: 0;
+            background: none;
+            border: none;
+            color: var(--header-text);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(128, 128, 128, 0.2);
+        }
+
+        .theme-toggle i {
+            font-size: 20px;
+        }
+
+        .voice-ai-alert, .voice-ai-response {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .notification-bubble {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .simulation-container {
+            display: flex;
+            height: calc(100vh - 100px);
+        }
+        .agent-panel {
+            flex: 1;
+            padding: 15px;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+        }
+        .interaction-panel {
+            flex: 2;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .agent-card {
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .interaction-flow {
+            position: relative;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .interaction-arrow {
+            position: absolute;
+            width: 2px;
+            background: #007bff;
+            transform-origin: top;
+        }
+        .notification-bubble {
+            padding: 10px;
+            border-radius: 15px;
+            margin: 5px 0;
+            max-width: 80%;
+            position: relative;
+        }
+        .notification-sent {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .notification-received {
+            background: #e9ecef;
+            margin-right: auto;
+        }
+        .twilio-call {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .voice-ai-alert {
+            background: #6f42c1;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+        .voice-ai-response {
+            background: #fd7e14;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            position: relative;
+        }
+        .response-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .response-button {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .response-yes {
+            background-color: #28a745;
+            color: white;
+        }
+        .response-no {
+            background-color: #dc3545;
+            color: white;
+        }
+        .response-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .follow-up-action {
+            background: #17a2b8;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        .simulation-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            z-index: 1000;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-active { background-color: #28a745; }
+        .status-processing { background-color: #ffc107; }
+        .status-complete { background-color: #6c757d; }
+        .status-error { background-color: #dc3545; }
+        .voice-interaction {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: #343a40;
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .voice-interaction:hover {
+            transform: scale(1.1);
+        }
+        .voice-interaction.listening {
+            background: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+        .voice-interaction.speaking {
+            background: #28a745;
+            animation: wave 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes wave {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        .voice-status {
+            position: fixed;
+            bottom: 150px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: none;
+            max-width: 300px;
+            text-align: center;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-color);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: var(--header-bg);
+            color: var(--header-text);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .message {
+            max-width: 80%;
+            margin: 8px 0;
+            padding: 12px 16px;
+            border-radius: 15px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .message.ai {
+            background: #6f42c1;
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user {
+            background: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.system {
+            background: #28a745;
+            color: white;
+            align-self: center;
+            border-radius: 20px;
+            font-size: 0.9em;
+            max-width: 60%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.emergency {
+            background-color: #ff4444;
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        
+        .status-message {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .status-message.emergency {
+            background-color: #ff4444;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Emergency Response System</a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link" href="/">Main Dashboard</a>
+                <a class="nav-link active" href="/simulation">Simulation</a>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-sun"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="simulation-container">
+            <!-- Agent Panel -->
+            <div class="agent-panel">
+                <h4>Active Agents</h4>
+                <div id="agent-list">
+                    <!-- Agent cards will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Interaction Panel -->
+            <div class="interaction-panel">
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <h4><i class="fas fa-headset"></i> Emergency Response Assistant</h4>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation Controls -->
+    <div class="simulation-controls">
+        <div class="row">
+            <div class="col-md-4">
+                <select class="form-select" id="scenario-select">
+                    <option value="">Select Scenario...</option>
+                    <option value="severe_storm">Severe Storm</option>
+                    <option value="tornado">Tornado Warning</option>
+                    <option value="gun_detected">Gun Detected</option>
+                    <option value="suspicious_activity">Suspicious Activity</option>
+                    <option value="fire_building">Building Fire</option>
+                    <option value="medical_emergency">Medical Emergency</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary" id="start-simulation">Start Simulation</button>
+                <button class="btn btn-danger" id="stop-simulation">Stop</button>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="auto-simulate">
+                    <label class="form-check-label" for="auto-simulate">
+                        Auto-simulate (5s interval)
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Interaction Button -->
+    <div class="voice-interaction" id="voiceButton">
+        <i class="fas fa-microphone"></i>
+    </div>
+    <div class="voice-status" id="voiceStatus">
+        <span id="statusText">Click the microphone to respond</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let autoSimulateInterval = null;
+        let recognition = null;
+        let synthesis = window.speechSynthesis;
+        let isRecording = false;
+        let currentUtterance = null;
+
+        function speak(text, onComplete) {
+            if (synthesis.speaking) {
+                synthesis.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            
+            utterance.onstart = () => {
+                isRecording = true;
+                document.getElementById('voiceButton').classList.add('speaking');
+                document.getElementById('statusText').textContent = 'AI Speaking...';
+                document.getElementById('voiceStatus').style.display = 'block';
+            };
+            
+            utterance.onend = () => {
+                isRecording = false;
+                document.getElementById('voiceButton').classList.remove('speaking');
+                document.getElementById('statusText').textContent = 'Click the microphone to respond';
+                if (onComplete) {
+                    setTimeout(onComplete, 500);
+                }
+            };
+            
+            currentUtterance = utterance;
+            synthesis.speak(utterance);
+        }
+
+        // Initialize speech recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    isRecording = true;
+                    document.getElementById('voiceButton').classList.add('listening');
+                    document.getElementById('voiceStatus').style.display = 'block';
+                    document.getElementById('statusText').textContent = 'Listening...';
+                };
+
+                recognition.onend = () => {
+                    isRecording = false;
+                    document.getElementById('voiceButton').classList.remove('listening');
+                    document.getElementById('statusText').textContent = 'Processing your response...';
+                };
+
+                recognition.onresult = (event) => {
+                    const response = event.results[0][0].transcript;
+                    console.log('Voice response:', response);
+                    document.getElementById('statusText').textContent = `You said: ${response}`;
+                    
+                    // Add user message to chat
+                    addUserResponse(response);
+                    
+                    // Process voice response
+                    handleVoiceInput(response);
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    document.getElementById('statusText').textContent = `Error: ${event.error}. Click to try again.`;
+                    isRecording = false;
+                    document.getElementById('voiceButton').classList.remove('listening');
+                };
+            } else {
+                console.error('Speech Recognition not supported');
+                document.getElementById('statusText').textContent = 'Speech Recognition not supported in this browser';
+            }
+        }
+
+        // Voice button click handler
+        document.getElementById('voiceButton').addEventListener('click', () => {
+            console.log('Voice button clicked'); // Debug log
+            if (isRecording) {
+                // Stop current speech
+                synthesis.cancel();
+                isRecording = false;
+                document.getElementById('voiceButton').classList.remove('speaking');
+                document.getElementById('statusText').textContent = 'Speech cancelled';
+            } else if (!recognition) {
+                initSpeechRecognition();
+            }
+        });
+
+        // Initialize speech recognition on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initSpeechRecognition();
+            console.log('Speech recognition initialized'); // Debug log
+        });
+
+        let currentScenario = '';
+
+        // Function to create agent card
+        function createAgentCard(agent) {
+            return `
+                <div class="card agent-card" id="agent-${agent.id}">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span class="status-indicator status-${agent.status.toLowerCase()}"></span>
+                            ${agent.name}
+                        </h5>
+                        <p class="card-text">Status: ${agent.status}</p>
+                        <p class="card-text">Last Update: ${agent.last_update}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to add interaction flow
+        function addInteractionFlow(from, to, message) {
+            const flow = document.createElement('div');
+            flow.className = 'interaction-flow';
+            flow.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <strong>${from}</strong>
+                    <strong>${to}</strong>
+                </div>
+                <p class="mt-2">${message}</p>
+            `;
+            document.getElementById('interaction-flow').prepend(flow);
+        }
+
+        // Function to add notification
+        function addNotification(message, type = 'received') {
+            const notification = document.createElement('div');
+            notification.className = `notification-bubble notification-${type}`;
+            notification.textContent = message;
+            document.getElementById('notification-log').prepend(notification);
+        }
+
+        // Function to add Twilio call notification
+        function addTwilioCall(phone, message) {
+            const call = document.createElement('div');
+            call.className = 'twilio-call';
+            call.innerHTML = `
+                <i class="fas fa-phone"></i>
+                <strong>Call to ${phone}</strong>
+                <p class="mb-0">${message}</p>
+            `;
+            document.getElementById('notification-log').prepend(call);
+        }
+
+        // Function to add voice AI alert
+        function addVoiceAIAlert(data) {
+            currentScenario = data.scenario;
+            const message = document.createElement('div');
+            message.className = 'message system emergency';
+            message.textContent = data.message;
+            document.getElementById('chat-messages').insertBefore(message, document.getElementById('chat-messages').firstChild);
+            
+            // Speak the alert message
+            speak(data.message, () => {
+                // Auto-start listening after speaking
+                setTimeout(initSpeechRecognition, 1000);
+            });
+        }
+        
+        // Function to add voice AI response
+        function addVoiceAIResponse(data) {
+            const message = document.createElement('div');
+            message.className = 'message ai';
+            if (data.type === 'emergency') {
+                message.classList.add('emergency');
+            }
+            message.textContent = data.response;
+            document.getElementById('chat-messages').insertBefore(message, document.getElementById('chat-messages').firstChild);
+            
+            // Speak the response
+            speak(data.response, () => {
+                // Auto-start listening after speaking
+                setTimeout(initSpeechRecognition, 1000);
+            });
+        }
+
+        // Function to add user response
+        function addUserResponse(text) {
+            const message = document.createElement('div');
+            message.className = 'message user';
+            message.textContent = text;
+            document.getElementById('chat-messages').insertBefore(message, document.getElementById('chat-messages').firstChild);
+        }
+
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('Connected to simulation server');
+        });
+
+        socket.on('agent_states', (data) => {
+            // Update agent cards
+            const agentList = document.getElementById('agent-list');
+            agentList.innerHTML = '';
+            
+            Object.entries(data).forEach(([key, agent]) => {
+                agentList.innerHTML += createAgentCard({
+                    id: key,
+                    name: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),
+                    status: agent.status,
+                    last_update: agent.last_update
+                });
+            });
+        });
+
+        socket.on('agent_interaction', (data) => {
+            addInteractionFlow(data.from, data.to, data.message);
+        });
+
+        socket.on('notification', (data) => {
+            addNotification(data.message, data.type);
+        });
+
+        socket.on('twilio_call', (data) => {
+            addTwilioCall(data.phone, data.message);
+        });
+
+        // Simulation controls
+        document.getElementById('start-simulation').addEventListener('click', () => {
+            const scenario = document.getElementById('scenario-select').value;
+            if (scenario) {
+                socket.emit('start_simulation', { scenario });
+            }
+        });
+
+        document.getElementById('stop-simulation').addEventListener('click', () => {
+            socket.emit('stop_simulation');
+            if (autoSimulateInterval) {
+                clearInterval(autoSimulateInterval);
+                autoSimulateInterval = null;
+            }
+        });
+
+        document.getElementById('auto-simulate').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                autoSimulateInterval = setInterval(() => {
+                    const scenario = document.getElementById('scenario-select').value;
+                    if (scenario) {
+                        socket.emit('start_simulation', { scenario });
+                    }
+                }, 5000);
+            } else {
+                if (autoSimulateInterval) {
+                    clearInterval(autoSimulateInterval);
+                    autoSimulateInterval = null;
+                }
+            }
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference or default to 'light'
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+        
+        function updateThemeIcon(theme) {
+            themeIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Handle voice input
+        function handleVoiceInput(text) {
+            // Get current emergency type from the page
+            const emergencyType = document.getElementById('scenario-select').value || 'severe_storm';
+            
+            // Detect emotion from text
+            const emotion = detectEmotion(text.toLowerCase());
+            
+            // Emit user response with all necessary data
+            socket.emit('user_response', {
+                response: text,
+                emergency_type: emergencyType,
+                emotion: emotion
+            });
+            
+            // Add user message to chat
+            addMessageToChat('You', text);
+        }
+
+        function detectEmotion(text) {
+            // Simple emotion detection from text
+            if (text.includes('help') || text.includes('emergency') || text.includes('not safe')) {
+                return 'distressed';
+            }
+            return 'neutral';
+        }
+
+        // Socket event listeners
+        socket.on('ai_response', function(data) {
+            addMessageToChat('AI', data.response, data.type);
+            // If it's an emergency response, play alert sound
+            if (data.type === 'emergency') {
+                playEmergencyAlert();
+            }
+        });
+
+        socket.on('emergency_dispatch', function(data) {
+            const message = `Emergency team dispatched! ETA: ${data.eta}`;
+            addMessageToChat('System', message, 'emergency');
+            playEmergencyAlert();
+        });
+
+        function addMessageToChat(sender, message, type = 'normal') {
+            const chatWindow = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatWindow.insertBefore(messageDiv, chatWindow.firstChild);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function playEmergencyAlert() {
+            const audio = new Audio('/static/emergency-alert.mp3');
+            audio.play();
+        }
+    </script>
+</body>
+</html> 
